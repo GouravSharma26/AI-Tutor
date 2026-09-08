@@ -292,7 +292,9 @@ export default function Conversation() {
     lastActiveTimeRef.current = Date.now();
     isProcessingRef.current = true;
     setIsProcessing(true);
-    const newMessages: Message[] = [...messages, { role: 'user', content: text }];
+    
+    const currentMessages = messagesRef.current;
+    const newMessages: Message[] = [...currentMessages, { role: 'user', content: text }];
     setMessages(newMessages);
 
     // Make stats interactive based on speech
@@ -309,10 +311,11 @@ export default function Conversation() {
     }
 
     try {
+      const currentUserName = localStorage.getItem('tuitor-username') || 'the user';
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: newMessages, userName }),
+        body: JSON.stringify({ messages: newMessages, userName: currentUserName }),
       });
 
       if (!response.ok || !response.body) throw new Error('API request failed');
