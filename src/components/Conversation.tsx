@@ -26,6 +26,7 @@ export default function Conversation() {
   const [userName, setUserName] = useState<string>('');
   const [showNameModal, setShowNameModal] = useState<boolean>(false);
   const [nameInput, setNameInput] = useState('');
+  const [showMobileSidebar, setShowMobileSidebar] = useState<boolean>(false);
   
   // Dynamic stats
   const [stats, setStats] = useState({ grammar: 0, vocabulary: 0, speaking: 0 });
@@ -44,7 +45,7 @@ export default function Conversation() {
   const currentAudioRef = useRef<HTMLAudioElement | null>(null);
   const isProcessingRef = useRef<boolean>(false);
   const isActiveSessionRef = useRef<boolean>(true);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const chatAreaRef = useRef<HTMLDivElement>(null);
   const waveRefs = useRef<(HTMLDivElement | null)[]>([]);
 
   const lastActiveTimeRef = useRef<number>(Date.now());
@@ -85,9 +86,14 @@ export default function Conversation() {
     messagesRef.current = messages;
   }, [messages]);
 
-  // Auto scroll to bottom
+  // Auto scroll to bottom without pushing window
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (chatAreaRef.current) {
+      chatAreaRef.current.scrollTo({
+        top: chatAreaRef.current.scrollHeight,
+        behavior: 'smooth'
+      });
+    }
   }, [messages, transcript]);
 
   // Session Timer & Inactivity
@@ -496,6 +502,14 @@ export default function Conversation() {
       {/* Top Navigation */}
       <nav className={styles.topNav}>
         <div className={styles.logoArea}>
+          <button 
+            className={styles.hamburgerBtn}
+            onClick={() => setShowMobileSidebar(!showMobileSidebar)}
+          >
+            <div style={{width: '20px', height: '2px', background: 'white', margin: '4px 0'}}></div>
+            <div style={{width: '20px', height: '2px', background: 'white', margin: '4px 0'}}></div>
+            <div style={{width: '20px', height: '2px', background: 'white', margin: '4px 0'}}></div>
+          </button>
           <Bot className={styles.logoIcon} />
           <span>Tuitor AI</span>
         </div>
@@ -508,7 +522,15 @@ export default function Conversation() {
 
       <div className={styles.contentArea}>
         {/* Left Sidebar */}
-        <aside className={styles.sidebar}>
+        <aside className={`${styles.sidebar} ${showMobileSidebar ? styles.open : ''}`}>
+          {/* Close button for mobile sidebar */}
+          <button 
+            className={styles.mobileCloseSidebar} 
+            onClick={() => setShowMobileSidebar(false)}
+          >
+            <XCircle size={24} />
+          </button>
+          
           <div>
             <div className={styles.sectionTitle}>My Progress</div>
             <div className={styles.progressList}>
@@ -622,7 +644,7 @@ export default function Conversation() {
             </div>
           </div>
 
-          <div className={styles.chatArea}>
+          <div className={styles.chatArea} ref={chatAreaRef}>
             {messages.map((msg, idx) => (
               <div key={idx} className={`${styles.chatMessage} ${styles[msg.role]}`}>
                 <div className={`${styles.messageHeader} ${styles[msg.role]}`}>
@@ -652,7 +674,6 @@ export default function Conversation() {
                 </div>
               </div>
             )}
-            <div ref={messagesEndRef} />
           </div>
 
         </main>
