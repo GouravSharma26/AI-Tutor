@@ -490,7 +490,11 @@
     width: 280px;
     z-index: 200;
     transition: left 0.3s ease;
-    background: var(--bg-main);
+    background: rgba(15, 20, 30, 0.92);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    box-shadow: 10px 0 40px rgba(0, 0, 0, 0.8);
+    border-right: 1px solid rgba(255, 255, 255, 0.05);
   }
   .sidebar.open {
     left: 0;
