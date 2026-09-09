@@ -38,6 +38,7 @@ export default function Conversation() {
   const [availableVoices, setAvailableVoices] = useState<SpeechSynthesisVoice[]>([]);
   const [selectedVoiceURI, setSelectedVoiceURI] = useState<string>('');
   const [speechRate, setSpeechRate] = useState<number>(1.0);
+  const [avatarGender, setAvatarGender] = useState<'female' | 'male'>('female');
 
   const recognitionRef = useRef<any>(null);
   const audioQueueRef = useRef<string[]>([]);
@@ -72,12 +73,18 @@ export default function Conversation() {
     if (savedWeekly) {
       try { setWeeklyData(JSON.parse(savedWeekly)); } catch (e) {}
     }
+    const savedGender = localStorage.getItem('tuitor-avatar');
+    if (savedGender === 'male' || savedGender === 'female') setAvatarGender(savedGender);
   }, []);
 
   // Save stats to Local Storage when they change
   useEffect(() => {
     localStorage.setItem('tuitor-stats', JSON.stringify(stats));
   }, [stats]);
+
+  useEffect(() => {
+    localStorage.setItem('tuitor-avatar', avatarGender);
+  }, [avatarGender]);
 
   useEffect(() => {
     localStorage.setItem('tuitor-weekly', JSON.stringify(weeklyData));
@@ -478,22 +485,6 @@ export default function Conversation() {
     }
   };
 
-  const renderWaveform = () => {
-    // 55 bars for the visualizer
-    const bars = new Array(55).fill(0);
-    return (
-      <div className={styles.waveformArea}>
-        {bars.map((_, i) => (
-          <div 
-            key={i} 
-            ref={el => { waveRefs.current[i] = el; }}
-            className={styles.waveBar}
-          />
-        ))}
-      </div>
-    );
-  };
-
   const CircularProgress = ({ value }: { value: number }) => {
     const radius = 16;
     const circumference = 2 * Math.PI * radius;
@@ -612,7 +603,7 @@ export default function Conversation() {
           <div className={styles.speakingCard}>
             <div className={styles.speakingTitle}>Speaking Practice: Describe Your Day</div>
             
-            {renderWaveform()}
+            {renderAvatar()}
 
             <div className={styles.speakingControls}>
               <div className={styles.controlButtons}>
@@ -729,8 +720,20 @@ export default function Conversation() {
                 onChange={(e) => setSelectedVoiceURI(e.target.value)}
               >
                 {availableVoices.map(v => (
-                  <option key={v.voiceURI} value={v.voiceURI}>{v.name}</option>
+                  <option key={v.voiceURI} value={v.voiceURI}>{getVoiceCategoryLabel(v)}</option>
                 ))}
+              </select>
+            </div>
+
+            <div className={styles.settingsGroup}>
+              <label>Avatar Character</label>
+              <select 
+                className={styles.settingsSelect}
+                value={avatarGender} 
+                onChange={(e) => setAvatarGender(e.target.value as 'female' | 'male')}
+              >
+                <option value="female">Female (Mia)</option>
+                <option value="male">Male (Felix)</option>
               </select>
             </div>
 

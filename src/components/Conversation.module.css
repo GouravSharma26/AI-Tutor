@@ -222,22 +222,69 @@
   margin-bottom: 2rem;
 }
 
-.waveformArea {
-  height: 60px;
+/* Avatar Animations */
+.avatarWrapper {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  margin: 0 auto 2rem auto;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 4px;
-  margin-bottom: 2rem;
 }
-.waveBar {
-  width: 4px;
-  background: linear-gradient(to top, var(--primary), var(--secondary));
-  border-radius: 2px;
-  height: 5%;
-  transition: height 0.05s ease;
+
+.avatarOrb {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(139, 92, 246, 0.2) 0%, transparent 70%);
+  transition: all 0.3s ease;
+  z-index: 1;
 }
-/* Assign delays dynamically in JS or CSS for the wave */
+
+.avatarOrb.pulseListen {
+  background: radial-gradient(circle, rgba(16, 185, 129, 0.3) 0%, transparent 70%);
+  animation: breathe 2s infinite ease-in-out;
+}
+
+.avatarOrb.pulseActive {
+  background: radial-gradient(circle, rgba(139, 92, 246, 0.5) 0%, transparent 70%);
+  animation: pulseSpeaking 1.5s infinite ease-in-out;
+}
+
+.avatarImg {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  z-index: 2;
+  transition: transform 0.2s ease;
+  background-color: var(--bg-main);
+  border: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.avatarImg.speakingBounce {
+  animation: talkingBounce 0.4s infinite alternate ease-in-out;
+}
+
+@keyframes breathe {
+  0% { transform: scale(1); opacity: 0.5; }
+  50% { transform: scale(1.2); opacity: 1; }
+  100% { transform: scale(1); opacity: 0.5; }
+}
+
+@keyframes pulseSpeaking {
+  0% { transform: scale(1); opacity: 0.6; }
+  50% { transform: scale(1.4); opacity: 1; }
+  100% { transform: scale(1); opacity: 0.6; }
+}
+
+@keyframes talkingBounce {
+  0% { transform: scale(1) translateY(0); }
+  100% { transform: scale(1.05) translateY(-5px); }
+}
 
 .speakingControls {
   display: flex;
@@ -513,9 +560,14 @@
     font-size: 1.1rem;
     margin-bottom: 1rem;
   }
-  .waveformArea {
-    height: 40px;
+  .avatarWrapper {
+    width: 90px;
+    height: 90px;
     margin-bottom: 1.5rem;
+  }
+  .avatarImg {
+    width: 60px;
+    height: 60px;
   }
   .chatArea {
     padding: 1.5rem;
