@@ -485,6 +485,28 @@ export default function Conversation() {
     }
   };
 
+  const getVoiceCategoryLabel = (voice: SpeechSynthesisVoice) => {
+    const name = voice.name.toLowerCase();
+    if (name.includes('zira') || name.includes('samantha') || name.includes('female') || name.includes('victoria')) {
+      return `Female (${voice.name.split('-')[0].trim()})`;
+    }
+    if (name.includes('david') || name.includes('mark') || name.includes('male') || name.includes('george')) {
+      return `Male (${voice.name.split('-')[0].trim()})`;
+    }
+    return voice.name;
+  };
+
+  const renderAvatar = () => {
+    const seed = avatarGender === 'female' ? 'Mia' : 'Felix';
+    const avatarUrl = `https://api.dicebear.com/7.x/notionists/svg?seed=${seed}&backgroundColor=transparent`;
+    return (
+      <div className={styles.avatarWrapper}>
+        <div className={`${styles.avatarOrb} ${isSpeaking ? styles.pulseActive : isListening ? styles.pulseListen : ''}`}></div>
+        <img src={avatarUrl} alt="AI Tutor Avatar" className={`${styles.avatarImg} ${isSpeaking ? styles.speakingBounce : ''}`} />
+      </div>
+    );
+  };
+
   const CircularProgress = ({ value }: { value: number }) => {
     const radius = 16;
     const circumference = 2 * Math.PI * radius;
