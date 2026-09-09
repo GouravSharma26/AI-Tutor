@@ -47,6 +47,7 @@ export default function Conversation() {
   const isActiveSessionRef = useRef<boolean>(true);
   const chatAreaRef = useRef<HTMLDivElement>(null);
   const waveRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const silenceTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const lastActiveTimeRef = useRef<number>(Date.now());
   const messagesRef = useRef<Message[]>(messages);
@@ -180,17 +181,26 @@ export default function Conversation() {
     if (typeof window !== 'undefined' && ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window)) {
       const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
       recognitionRef.current = new SpeechRecognition();
-      recognitionRef.current.continuous = false;
+      recognitionRef.current.continuous = true;
       recognitionRef.current.interimResults = true;
       recognitionRef.current.lang = 'en-US';
 
       recognitionRef.current.onresult = (event: any) => {
         lastActiveTimeRef.current = Date.now();
-        let currentTranscript = '';
-        for (let i = event.resultIndex; i < event.results.length; ++i) {
-          currentTranscript += event.results[i][0].transcript;
+        let fullTranscript = '';
+        for (let i = 0; i < event.results.length; ++i) {
+          fullTranscript += event.results[i][0].transcript;
         }
-        setTranscript(currentTranscript);
+        setTranscript(fullTranscript);
+
+        // Reset the 5-second silence timer every time they speak
+        if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
+        silenceTimerRef.current = setTimeout(() => {
+          // If 5 seconds of silence passes, stop recognition (which triggers onend and sends the message)
+          if (recognitionRef.current) {
+            recognitionRef.current.stop();
+          }
+        }, 5000);
       };
 
       recognitionRef.current.onerror = (event: any) => {
@@ -213,6 +223,7 @@ export default function Conversation() {
 
       recognitionRef.current.onend = () => {
         setIsListening(false);
+        if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
         setTranscript((current) => {
           if (current.trim()) {
             handleUserMessage(current.trim());
@@ -222,6 +233,7 @@ export default function Conversation() {
       };
     }
     return () => {
+      if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
       recognitionRef.current?.stop();
       stopAudio();
     };
