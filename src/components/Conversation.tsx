@@ -3,6 +3,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Mic, Square, Sparkles, BookOpen, Volume2, Bot, Settings, RotateCcw, XCircle, X } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
+import dynamic from 'next/dynamic';
+const Lottie = dynamic<any>(() => import('lottie-react').then((mod) => mod.Lottie as any), { ssr: false });
 import styles from './Conversation.module.css';
 
 interface Message {
@@ -35,10 +37,11 @@ export default function Conversation() {
   // Modal States
   const [showReportModal, setShowReportModal] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
-  const [availableVoices, setAvailableVoices] = useState<SpeechSynthesisVoice[]>([]);
-  const [selectedVoiceURI, setSelectedVoiceURI] = useState<string>('');
   const [speechRate, setSpeechRate] = useState<number>(1.0);
-  const [avatarGender, setAvatarGender] = useState<'female' | 'male'>('female');
+  const [tutorGender, setTutorGender] = useState<'female' | 'male'>('female');
+
+  const [maleAnimation, setMaleAnimation] = useState<any>(null);
+  const [femaleAnimation, setFemaleAnimation] = useState<any>(null);
 
   const recognitionRef = useRef<any>(null);
   const audioQueueRef = useRef<string[]>([]);
@@ -74,7 +77,11 @@ export default function Conversation() {
       try { setWeeklyData(JSON.parse(savedWeekly)); } catch (e) {}
     }
     const savedGender = localStorage.getItem('tuitor-avatar');
-    if (savedGender === 'male' || savedGender === 'female') setAvatarGender(savedGender);
+    if (savedGender === 'male' || savedGender === 'female') setTutorGender(savedGender);
+
+    // Load Lottie Animations
+    fetch('/male.json').then(r => r.json()).then(setMaleAnimation).catch(console.error);
+    fetch('/female.json').then(r => r.json()).then(setFemaleAnimation).catch(console.error);
   }, []);
 
   // Save stats to Local Storage when they change
@@ -83,8 +90,8 @@ export default function Conversation() {
   }, [stats]);
 
   useEffect(() => {
-    localStorage.setItem('tuitor-avatar', avatarGender);
-  }, [avatarGender]);
+    localStorage.setItem('tuitor-avatar', tutorGender);
+  }, [tutorGender]);
 
   useEffect(() => {
     localStorage.setItem('tuitor-weekly', JSON.stringify(weeklyData));
@@ -133,18 +140,11 @@ export default function Conversation() {
   // Fetch voices for settings
   useEffect(() => {
     if (typeof window !== 'undefined' && window.speechSynthesis) {
-      const loadVoices = () => {
-        const voices = window.speechSynthesis.getVoices().filter(v => v.lang.startsWith('en'));
-        setAvailableVoices(voices);
-        if (voices.length > 0 && !selectedVoiceURI) {
-          const pref = voices.find(v => v.name.includes('Natural') || v.name.includes('Google US English') || v.name.includes('Samantha'));
-          setSelectedVoiceURI(pref ? pref.voiceURI : voices[0].voiceURI);
-        }
-      };
-      loadVoices();
-      window.speechSynthesis.onvoiceschanged = loadVoices;
+      window.speechSynthesis.cancel();
+      // Voices are loaded automatically, no need to sync to state anymore
     }
-  }, [selectedVoiceURI]);
+    
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;}, []);
 
   // High-performance DOM waveform animation
   useEffect(() => {
@@ -286,9 +286,23 @@ export default function Conversation() {
       utterance.rate = speechRate;
       
       const voices = window.speechSynthesis.getVoices();
-      const chosenVoice = voices.find(v => v.voiceURI === selectedVoiceURI);
+      let chosenVoice;
+      if (tutorGender === 'female') {
+        chosenVoice = voices.find(v => {
+          const n = v.name.toLowerCase();
+          return n.includes('zira') || n.includes('samantha') || n.includes('female') || n.includes('victoria');
+        });
+      } else {
+        chosenVoice = voices.find(v => {
+          const n = v.name.toLowerCase();
+          return n.includes('david') || n.includes('mark') || n.includes('male') || n.includes('george');
+        });
+      }
+      
       if (chosenVoice) {
         utterance.voice = chosenVoice;
+      } else if (voices.length > 0) {
+        utterance.voice = voices[0];
       }
 
       utterance.onend = () => {
@@ -485,24 +499,24 @@ export default function Conversation() {
     }
   };
 
-  const getVoiceCategoryLabel = (voice: SpeechSynthesisVoice) => {
-    const name = voice.name.toLowerCase();
-    if (name.includes('zira') || name.includes('samantha') || name.includes('female') || name.includes('victoria')) {
-      return `Female (${voice.name.split('-')[0].trim()})`;
-    }
-    if (name.includes('david') || name.includes('mark') || name.includes('male') || name.includes('george')) {
-      return `Male (${voice.name.split('-')[0].trim()})`;
-    }
-    return voice.name;
-  };
-
   const renderAvatar = () => {
-    const seed = avatarGender === 'female' ? 'Mia' : 'Felix';
-    const avatarUrl = `https://api.dicebear.com/7.x/notionists/svg?seed=${seed}&backgroundColor=transparent`;
+    const animationData = tutorGender === 'female' ? femaleAnimation : maleAnimation;
+
     return (
       <div className={styles.avatarWrapper}>
         <div className={`${styles.avatarOrb} ${isSpeaking ? styles.pulseActive : isListening ? styles.pulseListen : ''}`}></div>
-        <img src={avatarUrl} alt="AI Tutor Avatar" className={`${styles.avatarImg} ${isSpeaking ? styles.speakingBounce : ''}`} />
+        <div className={styles.lottieContainer}>
+          {animationData ? (
+            <Lottie 
+              animationData={animationData} 
+              loop={true} 
+              autoplay={isSpeaking}
+              style={{ width: '100%', height: '100%', filter: 'drop-shadow(0 0 10px rgba(0,0,0,0.5))' }}
+            />
+          ) : (
+            <div style={{ color: 'var(--text-muted)' }}>Loading Tutor...</div>
+          )}
+        </div>
       </div>
     );
   };
@@ -735,27 +749,14 @@ export default function Conversation() {
             <h2 style={{ margin: 0 }}>Voice Settings</h2>
             
             <div className={styles.settingsGroup}>
-              <label>AI Voice</label>
+              <label>Tutor Persona (Voice & Avatar)</label>
               <select 
                 className={styles.settingsSelect}
-                value={selectedVoiceURI} 
-                onChange={(e) => setSelectedVoiceURI(e.target.value)}
+                value={tutorGender} 
+                onChange={(e) => setTutorGender(e.target.value as 'female' | 'male')}
               >
-                {availableVoices.map(v => (
-                  <option key={v.voiceURI} value={v.voiceURI}>{getVoiceCategoryLabel(v)}</option>
-                ))}
-              </select>
-            </div>
-
-            <div className={styles.settingsGroup}>
-              <label>Avatar Character</label>
-              <select 
-                className={styles.settingsSelect}
-                value={avatarGender} 
-                onChange={(e) => setAvatarGender(e.target.value as 'female' | 'male')}
-              >
-                <option value="female">Female (Mia)</option>
-                <option value="male">Male (Felix)</option>
+                <option value="female">Female</option>
+                <option value="male">Male</option>
               </select>
             </div>
 
