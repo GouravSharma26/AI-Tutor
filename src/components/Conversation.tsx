@@ -3,8 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Mic, Square, Sparkles, BookOpen, Volume2, Bot, Settings, RotateCcw, XCircle, X } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
-import dynamic from 'next/dynamic';
-const Lottie = dynamic<any>(() => import('lottie-react').then((mod) => mod.Lottie as any), { ssr: false });
+import { useLottie } from 'lottie-react';
 import styles from './Conversation.module.css';
 
 interface Message {
@@ -42,6 +41,29 @@ export default function Conversation() {
 
   const [maleAnimation, setMaleAnimation] = useState<any>(null);
   const [femaleAnimation, setFemaleAnimation] = useState<any>(null);
+
+  const LottieAvatar = ({ animationData, isSpeaking }: { animationData: any, isSpeaking: boolean }) => {
+    const options = {
+      animationData,
+      loop: true,
+      autoplay: true,
+    };
+    // @ts-ignore
+    const lottieObj = useLottie(options);
+    const { play, pause } = lottieObj;
+    const View = (lottieObj as any).View;
+    
+    useEffect(() => {
+      if (isSpeaking) {
+        if (play) play();
+      } else {
+        if (pause) pause();
+      }
+    }, [isSpeaking, play, pause]);
+
+    if (!animationData) return <div style={{ color: 'var(--text-muted)' }}>Loading Tutor...</div>;
+    return <div style={{ width: '100%', height: '100%', filter: 'drop-shadow(0 0 10px rgba(0,0,0,0.5))' }}>{View}</div>;
+  };
 
   const recognitionRef = useRef<any>(null);
   const audioQueueRef = useRef<string[]>([]);
@@ -506,16 +528,7 @@ export default function Conversation() {
       <div className={styles.avatarWrapper}>
         <div className={`${styles.avatarOrb} ${isSpeaking ? styles.pulseActive : isListening ? styles.pulseListen : ''}`}></div>
         <div className={styles.lottieContainer}>
-          {animationData ? (
-            <Lottie 
-              animationData={animationData} 
-              loop={true} 
-              autoplay={isSpeaking}
-              style={{ width: '100%', height: '100%', filter: 'drop-shadow(0 0 10px rgba(0,0,0,0.5))' }}
-            />
-          ) : (
-            <div style={{ color: 'var(--text-muted)' }}>Loading Tutor...</div>
-          )}
+          <LottieAvatar animationData={animationData} isSpeaking={isSpeaking} />
         </div>
       </div>
     );
