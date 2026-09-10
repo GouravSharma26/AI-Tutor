@@ -3,7 +3,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Mic, Square, Sparkles, BookOpen, Volume2, Bot, Settings, RotateCcw, XCircle, X } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
-import { useLottie } from 'lottie-react';
 import styles from './Conversation.module.css';
 
 interface Message {
@@ -38,32 +37,6 @@ export default function Conversation() {
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [speechRate, setSpeechRate] = useState<number>(1.0);
   const [tutorGender, setTutorGender] = useState<'female' | 'male'>('female');
-
-  const [maleAnimation, setMaleAnimation] = useState<any>(null);
-  const [femaleAnimation, setFemaleAnimation] = useState<any>(null);
-
-  const LottieAvatar = ({ animationData, isSpeaking }: { animationData: any, isSpeaking: boolean }) => {
-    const options = {
-      animationData,
-      loop: true,
-      autoplay: true,
-    };
-    // @ts-ignore
-    const lottieObj = useLottie(options);
-    const { play, pause } = lottieObj;
-    const View = (lottieObj as any).View;
-    
-    useEffect(() => {
-      if (isSpeaking) {
-        if (play) play();
-      } else {
-        if (pause) pause();
-      }
-    }, [isSpeaking, play, pause]);
-
-    if (!animationData) return <div style={{ color: 'var(--text-muted)' }}>Loading Tutor...</div>;
-    return <div style={{ width: '100%', height: '100%', filter: 'drop-shadow(0 0 10px rgba(0,0,0,0.5))' }}>{View}</div>;
-  };
 
   const recognitionRef = useRef<any>(null);
   const audioQueueRef = useRef<string[]>([]);
@@ -100,10 +73,6 @@ export default function Conversation() {
     }
     const savedGender = localStorage.getItem('tuitor-avatar');
     if (savedGender === 'male' || savedGender === 'female') setTutorGender(savedGender);
-
-    // Load Lottie Animations
-    fetch('/male.json').then(r => r.json()).then(setMaleAnimation).catch(console.error);
-    fetch('/female.json').then(r => r.json()).then(setFemaleAnimation).catch(console.error);
   }, []);
 
   // Save stats to Local Storage when they change
@@ -522,13 +491,11 @@ export default function Conversation() {
   };
 
   const renderAvatar = () => {
-    const animationData = tutorGender === 'female' ? femaleAnimation : maleAnimation;
-
     return (
       <div className={styles.avatarWrapper}>
         <div className={`${styles.avatarOrb} ${isSpeaking ? styles.pulseActive : isListening ? styles.pulseListen : ''}`}></div>
-        <div className={styles.lottieContainer}>
-          <LottieAvatar animationData={animationData} isSpeaking={isSpeaking} />
+        <div className={styles.aiCore}>
+          <Bot size={48} className={isSpeaking ? styles.iconBounce : ''} />
         </div>
       </div>
     );

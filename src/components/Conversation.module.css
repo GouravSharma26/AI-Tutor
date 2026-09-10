@@ -255,7 +255,7 @@
   animation: pulseSpeaking 1.5s infinite ease-in-out;
 }
 
-.lottieContainer {
+.aiCore {
   width: 100px;
   height: 100px;
   z-index: 2;
@@ -266,10 +266,14 @@
   border-radius: 50%;
   background: var(--bg-card);
   border: 2px solid rgba(255, 255, 255, 0.05);
+  box-shadow: inset 0 0 20px rgba(139, 92, 246, 0.2), 0 0 20px rgba(139, 92, 246, 0.4);
+  color: var(--primary);
 }
 
-.lottieContainer svg {
-  border-radius: 50%;
+.iconBounce {
+  animation: talkingBounce 0.4s infinite alternate ease-in-out;
+  color: #fff;
+  filter: drop-shadow(0 0 8px var(--primary));
 }
 
 @keyframes breathe {
@@ -568,7 +572,7 @@
     height: 100px;
     margin-bottom: 1.5rem;
   }
-  .lottieContainer {
+  .aiCore {
     width: 80px;
     height: 80px;
   }
