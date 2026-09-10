@@ -495,7 +495,7 @@ export default function Conversation() {
       <div className={styles.avatarWrapper}>
         <div className={`${styles.avatarOrb} ${isSpeaking ? styles.pulseActive : isListening ? styles.pulseListen : ''}`}></div>
         <div className={styles.aiCore}>
-          <Bot size={48} className={isSpeaking ? styles.iconBounce : ''} />
+          <Bot size={32} className={isSpeaking ? styles.iconBounce : ''} />
         </div>
       </div>
     );

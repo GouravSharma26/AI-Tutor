@@ -206,8 +206,8 @@
 .speakingCard {
   background-color: var(--bg-panel);
   border-radius: var(--radius-lg);
-  padding: 2rem;
-  margin: 2.5rem 2.5rem 0 2.5rem;
+  padding: 1.5rem 2rem;
+  margin: 1.5rem 1.5rem 0 1.5rem;
   flex-shrink: 0;
   position: relative;
   /* Glowing gradient border effect */
@@ -217,17 +217,17 @@
   box-shadow: 0 10px 40px -10px rgba(139, 92, 246, 0.2);
 }
 .speakingTitle {
-  font-size: 1.25rem;
+  font-size: 1.15rem;
   font-weight: 600;
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
 }
 
 /* Avatar Animations */
 .avatarWrapper {
   position: relative;
-  width: 120px;
-  height: 120px;
-  margin: 0 auto 2rem auto;
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 1rem auto;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -256,8 +256,8 @@
 }
 
 .aiCore {
-  width: 100px;
-  height: 100px;
+  width: 64px;
+  height: 64px;
   z-index: 2;
   transition: transform 0.2s ease;
   display: flex;
