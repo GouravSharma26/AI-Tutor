@@ -45,7 +45,7 @@ export default function Conversation() {
   const isProcessingRef = useRef<boolean>(false);
   const isActiveSessionRef = useRef<boolean>(true);
   const chatAreaRef = useRef<HTMLDivElement>(null);
-  const waveRefs = useRef<(HTMLDivElement | null)[]>([]);
+
   const silenceTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const lastActiveTimeRef = useRef<number>(Date.now());
@@ -137,43 +137,7 @@ export default function Conversation() {
     
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;}, []);
 
-  // High-performance DOM waveform animation
-  useEffect(() => {
-    let animationFrame: number;
-    let time = 0;
-    
-    const updateWaveform = () => {
-      time += 0.15;
-      
-      waveRefs.current.forEach((el, i) => {
-        if (!el) return;
-        
-        if (!isListening && !isSpeaking) {
-           // Flatline breathing effect when idle
-           el.style.height = `${Math.max(2, 5 + Math.sin(time + i * 0.2) * 2)}%`;
-           return;
-        }
-        
-        // Active dynamic waveform
-        const centerOffset = Math.abs(i - 27) / 27;
-        const envelope = Math.pow(1 - centerOffset, 1.2); // Bell curve shape
-        
-        const wave1 = Math.sin(time * 2 + i * 0.5);
-        const wave2 = Math.sin(time * 3.5 - i * 0.2);
-        const noise = Math.random() * 0.5;
-        
-        const baseHeight = envelope * 50;
-        const dynamicPart = (wave1 * 0.5 + wave2 * 0.5 + noise) * 50 * envelope;
-        
-        el.style.height = `${Math.max(4, Math.min(100, baseHeight + dynamicPart + 10))}%`;
-      });
-      
-      animationFrame = requestAnimationFrame(updateWaveform);
-    };
-    
-    animationFrame = requestAnimationFrame(updateWaveform);
-    return () => cancelAnimationFrame(animationFrame);
-  }, [isListening, isSpeaking]);
+
 
   useEffect(() => {
     if (typeof window !== 'undefined' && ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window)) {
