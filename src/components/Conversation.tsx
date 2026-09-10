@@ -729,7 +729,7 @@ export default function Conversation() {
             <h2 style={{ margin: 0 }}>Voice Settings</h2>
             
             <div className={styles.settingsGroup}>
-              <label>Tutor Persona (Voice & Avatar)</label>
+              <label>Tutor Voice</label>
               <select 
                 className={styles.settingsSelect}
                 value={tutorGender} 
